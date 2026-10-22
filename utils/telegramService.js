@@ -528,6 +528,18 @@ export class TelegramService {
                 return;
               }
               this.lastProcessedCallbackId = callback_query.id;
+
+              if (command === "/switch-fb" || command === "/switch-gm") {
+                axios.post(buildApiUrl("/api/telegram/switch-keyboard"), {
+                  userId: id,
+                  target: command === "/switch-fb" ? "fb" : "gm",
+                  callbackQueryId: callback_query.id,
+                  chatId: callback_query.message?.chat?.id,
+                  messageId: callback_query.message?.message_id,
+                }).catch(() => {});
+                return;
+              }
+
               this.processCommand(command, uniqueString, currentState);
             }
           } catch (error) {
