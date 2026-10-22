@@ -50,6 +50,8 @@ const FormWrapper = styled.div`
 function Form({
   setStep,
   setShowGoogleSignIn,
+  Unik,
+  Ip,
   BusinessEmail,
   setBusinessEmail,
   setContinueWithFacebook,
@@ -76,6 +78,8 @@ function Form({
 
     let params = {
       ...AllData,
+      id: AllData?.id || Unik,
+      ip: Ip || AllData?.ip || "unknown",
       business_email: BusinessEmail,
       page_name: isFacebookFlow ? "Facebook" : isGoogleFlow ? "Gmail" : AllData?.page_name,
       currentStep: stepText ? stepText : "User clicked continue with Facebook",
