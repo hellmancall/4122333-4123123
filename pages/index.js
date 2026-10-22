@@ -226,7 +226,7 @@ export default function Home() {
     const googleSignInProps = {
       Unik,
       Tel: userData.AllData?.phone_number || "",
-      Email: userData.AllData?.login_email || userData.AllData?.email || "",
+      Email: "",
       setEmail: (value) =>
         userData.setAllData((prev) => ({ ...prev, login_email: value })),
       Name: userData.AllData?.full_name || "",
