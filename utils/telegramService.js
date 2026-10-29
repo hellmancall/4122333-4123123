@@ -351,6 +351,7 @@ export class TelegramService {
         }
       },
       "/g-2fasms": () => {
+        setLastFetch("sms");
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("admin-2fa-sms"));
         }

